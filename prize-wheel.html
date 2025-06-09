@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Prize Wheel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #5bbaaf 0%, #39c1a3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 800px;
+            min-height: 600px;
+            position: relative;
+        }
+
+        .brand-header {
+            background: linear-gradient(135deg, #3edfaf 0%, #13b533 100%);
+            padding: 20px 50px;
+            text-align: center;
+            position: relative;
+        }
+
+        .banner-container {
+            margin-bottom: 20px;
+        }
+
+        .company-banner {
+            max-height: 150px;
+            max-width: 100%;
+            width: auto;
+            object-fit: contain;
+            border-radius: 7px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .form-section {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .welcome-message {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(45deg, #27c918, #3cd593);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .wheel-section {
+            display: none;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .wheel-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .wheel {
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            border: 8px solid #333;
+            position: relative;
+            transition: transform 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: conic-gradient(
+                from 0deg,
+                #c40c0c 0deg 45deg,
+                #3356e3 45deg 90deg,
+                #18c245 90deg 135deg,
+                #e6e331 135deg 180deg,
+                #c40c0c 180deg 225deg,
+                #3356e3 225deg 270deg,
+                #18c245 270deg 315deg,
+                #e6e331 315deg 360deg
+            );
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #333;
+            z-index: 10;
+        }
+
+        .wheel-segments {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .segment-text {
+            position: absolute;
+            font-weight: bold;
+            font-size: 12px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            text-align: center;
+            white-space: nowrap;
+            width: 80px;
+            height: 20px;
+            line-height: 20px;
+            left: 50%;
+            top: 50%;
+            transform-origin: 0 0;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            background: white;
+            border-radius: 50%;
+            border: 6px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .wheel-center-logo {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .wheel-center-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .spin-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .spin-btn:hover:not(:disabled) {
+            background: #ba1313;
+            transform: scale(1.05);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .prize-announcement {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .data-display {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 600px) {
+            .wheel {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .wheel-center {
+                width: 110px;
+                height: 110px;
+            }
+            
+            .wheel-center-logo {
+                max-width: 80px;
+                max-height: 80px;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+            
+            .form-section, .wheel-section {
+                padding: 20px;
+            }
+            
+            .company-banner {
+                max-height: 400px;
+            }
+            
+            .brand-header {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Brand Header -->
+        <div class="brand-header">
+            <div class="banner-container">
+                <img id="companyBanner" class="company-banner" src="https://i.ibb.co/BV4gs4LT/banner.png" alt="Company Banner">
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section" id="formSection">
+            <div class="welcome-message">
+                Bienvenido comparte tu experiencia y participa por un premio! Tu opinion nos ayuda a mejorar.
+            </div>
+            
+            <form id="customerForm" class="form-grid">
+                <div class="form-group">
+                    <label for="fullName">Nombre y Apellido *</label>
+                    <input type="text" id="fullName" name="fullName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="invoiceNumber">Nro de Factura *</label>
+                    <input type="text" id="invoiceNumber" name="invoiceNumber" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phoneNumber">Telefono *</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="suggestions">Sugerencias *</label>
+                    <textarea id="suggestions" name="suggestions" placeholder="Por favor comparte tu experiencia..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Siguiente</button>
+            </form>
+        </div>
+
+        <!-- Wheel Section -->
+        <div class="wheel-section" id="wheelSection">
+            <h2 style="margin-bottom: 20px; color: #333;">Gira para Ganar!</h2>
+            
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel">
+                    <div class="wheel-segments">
+                        <!-- Segment 1: Red (#ff6b6b) - 0° to 45° - Center at 15.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -1px) rotate(2.5deg) skewX(-10deg) translateY(-90px);">BARQUILLA</div>
+                        
+                        <!-- Segment 2: Teal (#4ecdc4) - 45° to 90° - Center at 55.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -10px) rotate(45.5deg) skewY(-10deg) translateY(-90px);">AGUA</div>
+                        
+                        <!-- Segment 3: Blue (#45b7d1) - 90° to 135° - Center at 122.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -10px) rotate(95.5deg) translateY(-90px);">HIELO</div>
+                        
+                        <!-- Segment 4: Green (#96ceb4) - 135° to 180° - Center at 157.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -10px) rotate(135.5deg) translateY(-90px);">SIN PREMIO</div>
+                        
+                        <!-- Segment 5: Yellow (#feca57) - 180° to 225° - Center at 202.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -10px) rotate(172.5deg) translateY(-100px);">BARQUILLA</div>
+                        
+                        <!-- Segment 6: Pink (#ff9ff3) - 225° to 270° - Center at 257.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -10px) rotate(217.5deg) translateY(-100px);">AGUA</div>
+                        
+                        <!-- Segment 7: Light Blue (#54a0ff) - 270° to 315° - Center at 292.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -10px) rotate(252.5deg) translateY(-100px);">HIELO</div>
+                        
+                        <!-- Segment 8: Purple (#5f27cd) - 315° to 360° - Center at 337.5° -->
+                        <div class="segment-text" style="transform: translate(-0px, -10px) rotate(317.5deg) translateY(-100px);">SIN PREMIO</div>
+                    </div>
+                </div>
+                <div class="wheel-center" id="wheelCenter">
+                    <img id="wheelCenterLogo" class="wheel-center-logo" src="https://i.ibb.co/QxJ6hyj/LOGO-AUTOFRESH-REDONDO-04.png" alt="Company Logo">
+                    <div id="wheelCenterText" class="wheel-center-text" style="display: none;">SPIN TO WIN!</div>
+                </div>
+            </div>
+            
+            <button class="spin-btn" onclick="spinWheel()" id="spinButton">GIRAR!</button>
+            
+            <div class="prize-announcement" id="prizeAnnouncement"></div>
+            
+            <!-- Data Display for Export Reference -->
+            <div class="data-display">
+                <h4>Collected Data (for Google Sheets/Excel export):</h4>
+                <div id="dataOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION - Replace these URLs with your actual image URLs
+        const COMPANY_BANNER_URL = "https://i.ibb.co/BV4gs4LT/banner.png";
+        const WHEEL_CENTER_LOGO_URL = "https://i.ibb.co/QxJ6hyj/LOGO-AUTOFRESH-REDONDO-04.png";
+        const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxencQqMTHfCmSf-Lb7Z8JgPWvNNPet84GEOU_f63fgivfxWx7Pp65N4_PHmTlLxYYU/exec"; // Add your deployed script URL here
+
+        // Store customer data in memory
+        let customerData = [];
+        let isSpinning = false;
+        let hasSpun = false; // Track if customer has already spun
+
+        // Function to send data to Google Sheets
+        async function sendToGoogleSheets(data) {
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                console.log('Data sent to Google Sheets:', result);
+                return result.success;
+            } catch (error) {
+                console.error('Error sending to Google Sheets:', error);
+                return false;
+            }
+        }
+
+        // Initialize images when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set images
+            document.getElementById('companyBanner').src = COMPANY_BANNER_URL;
+            document.getElementById('wheelCenterLogo').src = WHEEL_CENTER_LOGO_URL;
+            
+            // Setup form submission
+            document.getElementById('customerForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Get form data
+                const formData = {
+                    timestamp: new Date().toISOString(),
+                    fullName: document.getElementById('fullName').value,
+                    invoiceNumber: document.getElementById('invoiceNumber').value,
+                    phoneNumber: document.getElementById('phoneNumber').value,
+                    suggestions: document.getElementById('suggestions').value
+                };
+                
+                // Store data locally
+                customerData.push(formData);
+                
+                // Send to Google Sheets immediately
+                const success = await sendToGoogleSheets(formData);
+                if (success) {
+                    console.log('✅ Data saved to Google Sheets');
+                } else {
+                    console.log('❌ Failed to save to Google Sheets');
+                }
+                
+                // Display collected data
+                updateDataDisplay();
+                
+                // Show wheel section
+                document.getElementById('formSection').style.display = 'none';
+                document.getElementById('wheelSection').style.display = 'block';
+            });
+        });
+        
+        // Prize segments (8 segments, 45 degrees each)
+        const prizes = [
+            "🎉 1 Barquilla GRATIS!",
+            "🎁 RECARGA DE AGUA GRATIS!",
+            "💰 1 Bolsa de Hielo GRATIS!",
+            "🎫 Oh! Para la proxima!",
+            "✨ 1 Barquilla GRATIS",
+            "🚚 RECARGA DE AGUA GRATIS!",
+            "🎊 1 Bolsa de Hielo GRATIS!",
+            "🎪 Oh! Para la proxima!"
+        ];
+
+        function spinWheel() {
+            if (isSpinning || hasSpun) return; // Prevent spinning if already spun
+            
+            isSpinning = true;
+            hasSpun = true; // Mark that customer has spun
+            const spinButton = document.getElementById('spinButton');
+            const wheel = document.getElementById('wheel');
+            const prizeAnnouncement = document.getElementById('prizeAnnouncement');
+            
+            spinButton.disabled = true;
+            spinButton.textContent = 'GIRANDO...';
+            prizeAnnouncement.style.display = 'none';
+            
+            // Generate random spin (minimum 5 full rotations + random additional rotation)
+            const minSpins = 5 * 360;
+            const randomSpin = Math.random() * 360;
+            const totalRotation = minSpins + randomSpin;
+            
+            // Apply rotation
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            // Calculate winning segment after spin completes
+            setTimeout(() => {
+                // Calculate final position (normalize to 0-360)
+                const finalRotation = totalRotation % 360;
+                // Account for pointer position (top of wheel) and reverse direction
+                const adjustedRotation = (360 - finalRotation) % 360;
+                // Each segment is 45 degrees (360/8)
+                const segmentIndex = Math.floor(adjustedRotation / 45);
+                const winningPrize = prizes[segmentIndex];
+                
+                // Show prize
+                prizeAnnouncement.textContent = `🎉 Felicidades! HAS GANADO: ${winningPrize}`;
+                prizeAnnouncement.style.display = 'block';
+                
+                // Update customer data with prize
+                if (customerData.length > 0) {
+                    customerData[customerData.length - 1].prizeWon = winningPrize;
+                    
+                    // Send updated data to Google Sheets
+                    sendToGoogleSheets(customerData[customerData.length - 1]);
+                    
+                    updateDataDisplay();
+                }
+                
+                // Change button to show it's finished - no more spinning allowed
+                spinButton.textContent = 'PRIZE CLAIMED!';
+                spinButton.style.background = '#28a745';
+                spinButton.style.cursor = 'default';
+                isSpinning = false;
+            }, 4000);
+        }
+
+        // Remove goBack function - no longer needed
+
+        function updateDataDisplay() {
+            const dataOutput = document.getElementById('dataOutput');
+            const lastEntry = customerData[customerData.length - 1];
+            
+            dataOutput.innerHTML = `
+                <strong>Latest Entry:</strong><br>
+                Name: ${lastEntry.fullName}<br>
+                Invoice: ${lastEntry.invoiceNumber}<br>
+                Phone: ${lastEntry.phoneNumber}<br>
+                Suggestions: ${lastEntry.suggestions}<br>
+                Prize Won: ${lastEntry.prizeWon || 'Not spun yet'}<br>
+                Timestamp: ${new Date(lastEntry.timestamp).toLocaleString()}<br>
+                <br>
+                <strong>Total Entries:</strong> ${customerData.length}<br>
+                <br>
+                <em>In a real implementation, this data would be automatically sent to Google Sheets or Excel via API integration.</em>
+            `;
+        }
+
+        // Function to export data (for demonstration)
+        function exportToCSV() {
+            if (customerData.length === 0) return;
+            
+            const headers = ['Timestamp', 'Full Name', 'Invoice Number', 'Phone Number', 'Suggestions', 'Prize Won'];
+            const csvContent = [
+                headers.join(','),
+                ...customerData.map(row => [
+                    row.timestamp,
+                    `"${row.fullName}"`,
+                    row.invoiceNumber,
+                    row.phoneNumber,
+                    `"${row.suggestions.replace(/"/g, '""')}"`,
+                    `"${row.prizeWon || 'No spin'}"`
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'customer_feedback_and_prizes.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Add export button (hidden by default, can be shown for admin purposes)
+        window.exportData = exportToCSV;
+    </script>
+</body>
+</html>
